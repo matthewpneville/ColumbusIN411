@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[CITY] 411 City Resource Guide</title>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     HOW TO REBRAND THIS TEMPLATE FOR YOUR CITY
+     1. Edit the CONFIG object near the top of the <script> block at the
+        bottom of this file — city name, tagline, categories.
+     2. Add your real resources to the `resources` array — see the
+        EDITOR'S GUIDE comment right above it.
+     3. Fill in the City Services page (below the Directory page markup)
+        with your city's actual trash/parking/utilities/voting/etc info —
+        see the placeholder sections marked TODO.
+     4. Recolor the theme by editing the CSS variables in :root below.
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    /* ── THEME COLORS — change these to match your city's branding ── */
+    --primary: #003DA5;
+    --primary-dark: #002A75;
+    --primary-light: #E8EFFE;
+    --accent: #F5A623;
+    --accent-dark: #D4891A;
+    --bg: #F8F6F0;
+    --white: #FFFFFF;
+    --ink: #1A1A1A;
+    --ink-mid: #4A4A4A;
+    --ink-light: #8A8A8A;
+    --border: #D8D4CC;
+    --success: #1A7A4A;
+    --radius: 8px;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+  /* ── ALERT BANNER (dismissible, toggled via CONFIG.alertActive) ── */
+  .alert-banner { background: #C0202A; color: #fff; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px; font-size: 14px; }
+  .alert-banner.hidden { display: none; }
+  .alert-banner-text { cursor: pointer; display: flex; align-items: center; gap: 8px; text-align: center; flex: 1; justify-content: center; }
+  .alert-banner-text:hover { text-decoration: underline; }
+  .alert-banner-close { background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 2px 6px; opacity: 0.85; }
+  .alert-banner-close:hover { opacity: 1; }
+
+  /* ── NAV ── */
+  header { background: var(--primary); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .header-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.04em; color: var(--white); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .logo-badge { background: var(--accent); color: var(--ink); font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab { background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 14px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+  .nav-tab:hover { background: rgba(255,255,255,0.1); color: white; }
+  .nav-tab.active { background: rgba(255,255,255,0.18); color: white; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HERO / SEARCH (Directory page) ── */
+  .hero { background: var(--primary); padding: 40px 24px 48px; text-align: center; }
+  .hero h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(30px, 7vw, 50px); color: var(--white); }
+  .hero p { color: rgba(255,255,255,0.85); margin-top: 8px; font-size: 16px; }
+  .search-bar { max-width: 640px; margin: 24px auto 0; display: flex; gap: 8px; }
+  .search-input { flex: 1; padding: 14px 16px; border-radius: var(--radius); border: none; font-size: 15px; font-family: inherit; }
+  .search-btn { background: var(--accent); color: var(--ink); border: none; border-radius: var(--radius); padding: 0 22px; font-weight: 700; cursor: pointer; }
+
+  /* ── CATEGORY GRID ── */
+  .cat-grid { max-width: 980px; margin: -20px auto 0; padding: 0 24px 8px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; position: relative; z-index: 5; }
+  .cat-tile { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .cat-tile:hover { border-color: var(--primary); }
+  .cat-tile.active { background: var(--primary-light); border-color: var(--primary); }
+  .cat-icon { font-size: 22px; display: block; margin-bottom: 6px; }
+  .cat-name { font-size: 12.5px; font-weight: 600; }
+
+  /* ── RESULTS ── */
+  .results-wrap { max-width: 900px; margin: 32px auto; padding: 0 24px; }
+  .results-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .results-header h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .results-count { color: var(--ink-light); font-size: 13px; }
+  .resource-list { display: flex; flex-direction: column; gap: 12px; }
+  .resource-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px 20px; transition: border-color 0.15s, box-shadow 0.15s; }
+  .resource-card:hover { border-color: var(--primary); box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .card-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; }
+  .tag-cat { background: var(--primary-light); color: var(--primary); }
+  .tag-scope { background: #F0F0F0; color: var(--ink-mid); }
+  .tag-free { background: #E3F5EA; color: var(--success); }
+  .tag-partner { background:#FFF3D6;color:#A05A00; }
+  .card-desc { margin: 8px 0; font-size: 14px; color: var(--ink-mid); line-height: 1.5; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; }
+  .card-meta a { color: var(--primary); }
+
+  /* ── CITY SERVICES / GUIDE PAGE ── */
+  .guide-hero { background: var(--primary); padding: 40px 24px 48px; text-align: center; position: relative; overflow: hidden; }
+  .guide-hero::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 32px; background: var(--bg); clip-path: ellipse(55% 100% at 50% 100%); }
+  .guide-hero h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(30px, 7vw, 48px); line-height: 1; color: var(--white); text-transform: uppercase; margin-bottom: 10px; }
+  .guide-hero h1 span { color: var(--accent); }
+  .guide-hero p { color: rgba(255,255,255,0.75); font-size: 15px; max-width: 480px; margin: 0 auto; }
+
+  .guide-main { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
+  .guide-section { margin-bottom: 44px; }
+  .guide-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 3px solid var(--accent); }
+  .guide-section-icon { font-size: 24px; }
+  .guide-section-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink); }
+
+  .guide-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .guide-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; transition: border-color 0.15s, box-shadow 0.15s; }
+  .guide-card:hover { border-color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+  .guide-card-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.02em; color: var(--ink); margin-bottom: 6px; }
+  .guide-card-body { font-size: 13.5px; color: var(--ink-mid); line-height: 1.6; margin-bottom: 10px; }
+  .guide-card-body strong { color: var(--ink); font-weight: 600; }
+  .guide-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .guide-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--primary); text-decoration: none; background: var(--primary-light); padding: 4px 10px; border-radius: 4px; transition: background 0.15s; }
+  .guide-link:hover { background: #d0deff; }
+
+  .guide-tip { background: #FFF8EC; border: 1.5px solid var(--accent); border-radius: var(--radius); padding: 14px 18px; font-size: 13.5px; color: var(--ink-mid); line-height: 1.6; margin-top: 12px; }
+  .guide-tip strong { color: var(--ink); }
+
+  footer { text-align: center; padding: 28px 20px; font-size: 13px; color: var(--ink-light); border-top: 1px solid var(--border); }
+  footer a { color: var(--primary); }
+
+  @media (max-width: 520px) { .guide-cards { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { .nav-tab { padding: 8px 10px; font-size: 13px; } }
+</style>
+</head>
+<body>
+
+<div class="alert-banner hidden" id="alertBanner">
+  <div class="alert-banner-text" id="alertBannerText" onclick="if(window.__alertUrl) window.open(window.__alertUrl,'_blank')">
+    <span class="alert-banner-icon">⚠️</span>
+    <span id="alertBannerMsg"></span>
+  </div>
+  <button class="alert-banner-close" onclick="document.getElementById('alertBanner').classList.add('hidden')">✕</button>
+</div>
+
+<header>
+  <div class="header-logo" onclick="showPage('directory')">
+    <span id="logoText">[CITY] <span class="logo-badge">411</span></span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-page="directory" onclick="showPage('directory')">Directory</button>
+    <button class="nav-tab" data-page="services" onclick="showPage('services')">City Services</button>
+  </div>
+</header>
+
+<!-- ══════════════════ PAGE 1: DIRECTORY ══════════════════ -->
+<div class="page active" id="page-directory">
+  <div class="hero">
+    <h1 id="heroTitle">Find help in [CITY]</h1>
+    <p id="heroSubtitle">Verified nonprofit and government resources for residents.</p>
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" type="text" placeholder="What do you need help with? (e.g. rent, food, job training…)" />
+      <button class="search-btn" id="searchBtn">Search</button>
+    </div>
+  </div>
+
+  <div class="cat-grid" id="catGrid"><!-- populated from CONFIG.categories by JS --></div>
+
+  <div class="results-wrap">
+    <div id="browsePrompt" style="text-align:center;padding:40px 24px;color:var(--ink-light)">
+      <div style="font-size:32px;margin-bottom:8px">🔎</div>
+      <p>Search above or pick a category to browse resources.</p>
+    </div>
+    <div id="resultsArea" style="display:none">
+      <div class="results-header">
+        <h2 id="resultsTitle">Resources</h2>
+        <span class="results-count" id="resultsCount"></span>
+        <a href="#" id="clearFilter" style="display:none;font-size:13px" onclick="clearAll();return false;">Clear</a>
+      </div>
+      <div class="resource-list" id="resourceList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 2: CITY SERVICES ══════════════════
+     This is a quick-reference guide to everyday city living info —
+     trash pickup, parking rules, utilities, voting, schools, permits,
+     pets, safety — the kind of stuff residents Google constantly.
+     Each guide-section below is a TODO stub. Replace the placeholder
+     cards with your city's real info and official links. Copy a
+     guide-section block to add more topics, or delete ones that don't
+     apply to your city.
+==================================================================== -->
+<div class="page" id="page-services">
+  <div class="guide-hero">
+    <h1>Living in <span id="guideCityName">[City]</span></h1>
+    <p>Everyday city services — trash days, parking rules, utilities, voting, and more. Links go directly to official city sources so the info stays current.</p>
+  </div>
+
+  <div class="guide-main">
+
+    <!-- ── TRASH & RECYCLING (TODO: replace with your city's info) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🗑️</span>
+        <span class="guide-section-title">Trash & Recycling</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Find Your Pickup Day</div>
+          <div class="guide-card-body">TODO: explain how residents look up their trash/recycling pickup schedule, and link to your city's lookup tool.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="#" target="_blank">🔍 Find my pickup day</a>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Recycling Program</div>
+          <div class="guide-card-body">TODO: describe how to sign up for recycling (if opt-in), what's accepted, and what's not.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="#" target="_blank">♻️ Sign up for recycling</a>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Bulk & Yard Waste Pickup</div>
+          <div class="guide-card-body">TODO: explain bulk item pickup (furniture, appliances) and seasonal yard waste rules.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="#" target="_blank">🍂 Yard waste info</a>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Missed Pickup or Illegal Dumping</div>
+          <div class="guide-card-body">TODO: link to your city's 311-equivalent reporting tool for missed pickups or dumping complaints.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="#" target="_blank">📱 Report an issue</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PARKING (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🚗</span>
+        <span class="guide-section-title">Parking</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Street Cleaning / No-Parking Days</div>
+          <div class="guide-card-body">TODO: explain street cleaning schedules and how residents check their block.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🧹 Street maintenance info</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Pay Parking & Meters</div>
+          <div class="guide-card-body">TODO: describe the parking app/kiosk system, rates, and hours of enforcement.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">📱 Parking app</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Residential Parking Permits</div>
+          <div class="guide-card-body">TODO: explain any residential permit zones and how to apply.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🏠 Get a permit</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Pay a Parking Ticket</div>
+          <div class="guide-card-body">TODO: link to the online ticket payment portal.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">💳 Pay a ticket</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── UTILITIES (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">💧</span>
+        <span class="guide-section-title">Water & Utilities</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Start or Transfer Water Service</div>
+          <div class="guide-card-body">TODO: explain how new residents set up water service, required documents, and timeline.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">💧 Start water service</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Pay Your Water Bill</div>
+          <div class="guide-card-body">TODO: link to the online bill pay portal and billing cycle info.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">💳 Pay online</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Water Assistance Programs</div>
+          <div class="guide-card-body">TODO: describe low-income water bill assistance or shutoff protection programs.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🤝 Water assistance</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Electric & Gas Service</div>
+          <div class="guide-card-body">TODO: name the local utility provider(s) and link to start/stop service and assistance programs.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">⚡ Start/stop service</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VOTING & CIVIC LIFE (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🗳️</span>
+        <span class="guide-section-title">Voting & Civic Life</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Register to Vote</div>
+          <div class="guide-card-body">TODO: explain registration deadlines, same-day registration rules, and where to sign up.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">✅ Register online</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Find Your Polling Place</div>
+          <div class="guide-card-body">TODO: link to your state/county's polling place lookup tool and early voting info.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">📍 Find my polling place</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Find Your Council Rep</div>
+          <div class="guide-card-body">TODO: explain the city council district structure and link to a district map.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🗺️ District map</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Report a City Issue</div>
+          <div class="guide-card-body">TODO: link to your city's non-emergency service request portal (potholes, streetlights, etc.).</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">📱 Report an issue</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCHOOLS & EDUCATION (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🏫</span>
+        <span class="guide-section-title">Schools & Education</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Enroll in Public Schools</div>
+          <div class="guide-card-body">TODO: describe the main K-12 district, enrollment process, and required documents.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">📚 Enrollment info</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Find a School by Address</div>
+          <div class="guide-card-body">TODO: link to a school locator tool and mention charter/school-of-choice options.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🗺️ School locator</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Free Preschool & Head Start</div>
+          <div class="guide-card-body">TODO: link to income-eligible early education program finders.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">👶 Find free preschool</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Adult Education & GED</div>
+          <div class="guide-card-body">TODO: link to adult ed, GED prep, and ESL programs.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🎓 Adult education</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ID, LICENSES & VEHICLES (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🪪</span>
+        <span class="guide-section-title">ID, Licenses & Vehicles</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Driver's License or State ID</div>
+          <div class="guide-card-body">TODO: explain the process and deadline for new residents to get a local license/ID.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🪪 Get a license or ID</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Register or Transfer a Vehicle</div>
+          <div class="guide-card-body">TODO: explain vehicle registration requirements and deadlines for new residents.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🚗 Register a vehicle</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Update Your Address</div>
+          <div class="guide-card-body">TODO: link to the address-update process for state ID/voter registration.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">📬 Update address</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PERMITS, PROPERTY & TAXES (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">📋</span>
+        <span class="guide-section-title">Permits, Property & Taxes</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Building Permits</div>
+          <div class="guide-card-body">TODO: explain which home projects require permits and link to the permitting office.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🔨 Building permits</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Property Taxes</div>
+          <div class="guide-card-body">TODO: describe due dates, payment portal, and any homeowner exemptions.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">💳 Pay property taxes</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Property Tax Assistance</div>
+          <div class="guide-card-body">TODO: link to any tax assistance or foreclosure-prevention programs.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🤝 Tax assistance</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PETS (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🐾</span>
+        <span class="guide-section-title">Pets & Animals</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Dog Licenses</div>
+          <div class="guide-card-body">TODO: explain licensing requirements and where to register.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🐕 License your dog</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Animal Control & Reporting</div>
+          <div class="guide-card-body">TODO: link to animal control for strays, injured, or dangerous animals.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🐾 Animal control</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SAFETY & EMERGENCY (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🚨</span>
+        <span class="guide-section-title">Safety & Emergency</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Emergency vs. Non-Emergency</div>
+          <div class="guide-card-body">TODO: clarify when to call 911 vs. the local non-emergency police line.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="tel:911">🆘 911 (emergencies)</a>
+            <a class="guide-link" href="#" target="_blank">📞 Non-emergency police</a>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Emergency Alerts</div>
+          <div class="guide-card-body">TODO: link to your city/county's text/email emergency alert sign-up.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🔔 Sign up for alerts</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Warming / Cooling Centers</div>
+          <div class="guide-card-body">TODO: list or link to seasonal shelter locations for extreme weather.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🏠 Find a center</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Fire Safety & Prevention</div>
+          <div class="guide-card-body">TODO: mention free smoke detector programs or fire code basics.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🔥 Fire department</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NEIGHBORHOOD LIFE (TODO) ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🌳</span>
+        <span class="guide-section-title">Neighborhood Life</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Join or Start a Block Club</div>
+          <div class="guide-card-body">TODO: link to your city's neighborhood association / block club program.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">🏘️ Block club program</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Parks & Recreation</div>
+          <div class="guide-card-body">TODO: link to your parks department and recreation program registration.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">⛳ Parks & recreation</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Library Card</div>
+          <div class="guide-card-body">TODO: explain how residents get a free library card and what it unlocks.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">📚 Get a library card</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Free Tax Preparation</div>
+          <div class="guide-card-body">TODO: link to free VITA tax prep sites and EITC info, if applicable.</div>
+          <div class="guide-links"><a class="guide-link" href="#" target="_blank">💵 Free tax prep</a></div>
+        </div>
+      </div>
+      <div class="guide-tip">
+        <strong>New to [CITY]?</strong> TODO: add a closing tip pointing residents back to the Directory tab, or to your city's main info line.
+      </div>
+    </div>
+
+  </div><!-- end guide-main -->
+</div>
+
+<footer>
+  <strong id="footerCity">[CITY] 411</strong> — a community resource guide for [CITY] residents.<br>
+  Information links to official sources but may change — always verify directly.
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFIG — edit this block to rebrand the whole site for your city
+// ═══════════════════════════════════════════════════════════════════════════
+const CONFIG = {
+  cityName: "Columbus",
+
+  // Toggle the red banner at the top of the page. Set alertActive to false
+  // to hide it (code stays in place for reuse later).
+  alertActive: false,
+  alertText: "Extreme weather alert — find a cooling/warming center near you.",
+  alertUrl: "https://example.gov/emergency-info",
+
+  // Category name + emoji shown as filter tiles. The `name` must exactly
+  // match the `category` value used in each resource entry below.
+  
+  categories: [
+    { name: "Crisis & Emergency", icon: "🆘" },
+    { name: "Food & Hunger", icon: "🥗" },
+    { name: "Housing", icon: "🏠" },
+    { name: "Health", icon: "🏥" },
+    { name: "Youth & Education", icon: "🎒" },
+    { name: "Seniors", icon: "👴" },
+    { name: "Legal", icon: "⚖️" },
+    { name: "Transportation", icon: "🚌" },
+    { name: "Financial Assistance", icon: "💵" },
+    { name: "Disability Services", icon: "♿" },
+    { name: "Family & Children", icon: "👨‍👩‍👧‍👦" },
+    { name: "Animals", icon: "🐾" },
+    { name: "Arts & Culture", icon: "🎭" },
+    { name: "Community", icon: "🤝" },
+    { name: "Environment", icon: "🌳" },
+    { name: "Veterans", icon: "🎖️" },
+    { name: "Equality", icon: "🏳️‍🌈" }
+  ]
+
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EDITOR'S GUIDE — how to add/update/remove resources
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// ── TO ADD A NEW RESOURCE ───────────────────────────────────────────────
+//   Copy any existing entry below (one full { ... } block), paste it before
+//   the closing ]; of the `resources` array, and fill in all fields.
+//   `category` must exactly match one of the names in CONFIG.categories.
+//
+// ── FIELDS ───────────────────────────────────────────────────────────────
+//   name:     organization name (required)
+//   category: must match a CONFIG.categories name exactly (required)
+//   scope:    "Citywide", "Northside", "Regional", etc.
+//   free:     true or false — reflects your $50/year-or-less editorial rule
+//   desc:     1–3 sentence description shown on the card
+//   phone:    phone number string, e.g. "(555) 555-1234"
+//   address:  street address string (omit or leave "" if no fixed address)
+//   website:  full URL starting with https://
+//   hours:    hours string, e.g. "Mon–Fri 9am–5pm"
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+const resources = [
+  {
+    "name": "Advocates for Children",
+    "category": "Family & Children",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Court Appointed Special Advocates (CASA)",
+    "phone": "",
+    "address": "",
+    "website": "apowerfulvoice.org",
+    "hours": ""
+  },
+  {
+    "name": "Alzheimer's Association",
+    "category": "Health",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Regional chapter presence",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "American Red Cross, Southeast Indiana Chapter",
+    "category": "Crisis & Emergency",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Crisis & Emergency services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Atterbury-Bakalar Air Museum",
+    "category": "Arts & Culture",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Aviation history museum",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Bartholomew County Financial Literacy Coalition",
+    "category": "Financial Assistance",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Financial Assistance services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Bartholomew County Historical Society",
+    "category": "Arts & Culture",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Arts & Culture services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Bartholomew County Humane Society",
+    "category": "Animals",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Animals services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Bartholomew County Parks Department",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Government/park dept",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Bartholomew County Public Library",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Bartholomew County School Supply Assistance Program",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Bartholomew County Soil and Water Conservation District - CISMA",
+    "category": "Environment",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Environment services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Bartholomew County Solid Waste Management District",
+    "category": "Environment",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Government agency",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "BCSC Cultural Learning Center",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Bartholomew Consolidated School Corp program",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Book Buddies",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Literacy mentoring",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "C4 Columbus Area Career Connection",
+    "category": "Financial Assistance",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Workforce development",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Calvary Community Church",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Faith-based community programs",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Children, Inc. Learning Center",
+    "category": "Family & Children",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Early childhood education/childcare",
+    "phone": "",
+    "address": "",
+    "website": "childreninclearningcenter.com",
+    "hours": ""
+  },
+  {
+    "name": "Clarity of Central Indiana",
+    "category": "Family & Children",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Pregnancy resource center",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Animal Care Services",
+    "category": "Animals",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Municipal animal shelter",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Area Arts Council",
+    "category": "Arts & Culture",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Arts & Culture services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Bike Co-op",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Community services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Fellowship Club",
+    "category": "Health",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Recovery support",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Firemen's Cheer Fund",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Charitable fund via fire dept",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus IN Pride Inc.",
+    "category": "Equality",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Equality services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Indiana Parks and Recreation",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Municipal dept",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Municipal Airport",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Municipal facility",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Pollinator Committee",
+    "category": "Environment",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Environment services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Propeller, Inc",
+    "category": "Arts & Culture",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Community arts/culture project",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Regional Health",
+    "category": "Health",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Regional hospital system",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Scottish Festival",
+    "category": "Arts & Culture",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Arts & Culture services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Sunrise Rotary",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Service club",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Columbus Symphony Orchestra",
+    "category": "Arts & Culture",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Arts & Culture services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Community Center of Hope",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Food & Hunger services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "communitycenterofhope.org",
+    "hours": ""
+  },
+  {
+    "name": "Department of Public Works",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Municipal dept",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Empty Bowls \u2013 Columbus, Indiana Fundraiser",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Anti-hunger fundraiser event",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "F.O.E Eagles #741",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Fraternal/civic org",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Family School Partners",
+    "category": "Family & Children",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Mentoring program",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "First Presbyterian Preschool",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "First Steps South East",
+    "category": "Family & Children",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Early intervention services",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "FOP 89 Youth Program (Shop With a Cop)",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Fraternal Order of Police program",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Foundation For Youth",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "foundationforyouth.com",
+    "hours": ""
+  },
+  {
+    "name": "George Junior Republic in Indiana",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth residential/education services",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Girl Scouts of Central Indiana",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Gleaners Food Bank of Indiana",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Regional food bank",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Healthy Communities",
+    "category": "Health",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Health services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Hoosier Trails Council, Boy Scouts of America",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Human Services, Inc.",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Mental health & social services",
+    "phone": "",
+    "address": "",
+    "website": "hsi-indiana.com",
+    "hours": ""
+  },
+  {
+    "name": "Imagination Library of Bartholomew County, Inc.",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Dolly Parton Imagination Library affiliate",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "IYG Columbus",
+    "category": "Equality",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "LGBTQ+ youth group (Indiana Youth Group)",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Just Friends Adult Day Services",
+    "category": "Seniors",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Seniors services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "justfriendscolumbus.com",
+    "hours": ""
+  },
+  {
+    "name": "Landmark Columbus Foundation",
+    "category": "Arts & Culture",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Architecture/design preservation",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Legal Aid (Pro Bono Indiana, Inc.)",
+    "category": "Legal",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Legal services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Lincoln-Central Neighborhood Family Center",
+    "category": "Family & Children",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Family & Children services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "lcnfc.org",
+    "hours": ""
+  },
+  {
+    "name": "Love Chapel (Ecumenical Assembly of Bartholomew County Churches)",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Food pantry, financial assistance",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "McDowell Education Center",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Mill Race Center",
+    "category": "Seniors",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Senior center",
+    "phone": "",
+    "address": "",
+    "website": "millracecenter.org",
+    "hours": ""
+  },
+  {
+    "name": "Mill Race Marathon",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Fundraising running event",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Moms Demand Action for Gun Sense in America",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Local chapter",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "NAACP of Columbus/Bartholomew",
+    "category": "Equality",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Equality services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Orphan Grain Train, Indiana Branch",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Disaster relief/donated goods",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Our Hospice of South Central Indiana",
+    "category": "Health",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Health services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Psi Iota Xi Thrift Shop",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Sorority-run thrift store funding philanthropy",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Purdue Extension-Bartholomew County",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "4-H and community education",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "REACH Columbus, Inc",
+    "category": "Family & Children",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Child advocacy center",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Red Arch Community Events",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Community services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Sandi's Closet, Inc.",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Clothing assistance",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Sans Souci",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Adult day program",
+    "phone": "",
+    "address": "",
+    "website": "sanssouci.org",
+    "hours": ""
+  },
+  {
+    "name": "Servants at Work, Inc.",
+    "category": "Food & Hunger",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Wheelchair ramp building",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Stone Belt Arc",
+    "category": "Disability Services",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Services for people with disabilities",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Students' Fund of Hope",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Su Casa Indiana",
+    "category": "Family & Children",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Hispanic/Latino family services",
+    "phone": "",
+    "address": "",
+    "website": "sucasaindiana.org",
+    "hours": ""
+  },
+  {
+    "name": "The Teddy Bear Love Fund Inc.",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Supports families of children with cancer",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Thrive Alliance",
+    "category": "Seniors",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Aging & disability services, meals on wheels",
+    "phone": "",
+    "address": "",
+    "website": "thrive-alliance.org",
+    "hours": ""
+  },
+  {
+    "name": "TuFuturo Latino Education Group",
+    "category": "Youth & Education",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Youth & Education services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Turning Point Domestic Violence Services",
+    "category": "Crisis & Emergency",
+    "scope": "Countywide",
+    "free": true,
+    "partner": true,
+    "desc": "Crisis & Emergency services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "turningpointdv.org",
+    "hours": ""
+  },
+  {
+    "name": "United Way of Bartholomew County",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Umbrella funder/convener",
+    "phone": "",
+    "address": "",
+    "website": "uwbarthco.org",
+    "hours": ""
+  },
+  {
+    "name": "Utopia Wildlife Rehabilitators",
+    "category": "Animals",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Animals services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Veterans of Foreign Wars (VFW) Post 1987",
+    "category": "Veterans",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Veterans services and community support in Bartholomew County.",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Volunteers of America, Ohio & Indiana",
+    "category": "Community",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Regional multi-service nonprofit",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  },
+  {
+    "name": "Yellow Trail Museum & Visitors Center",
+    "category": "Arts & Culture",
+    "scope": "Countywide",
+    "free": true,
+    "partner": false,
+    "desc": "Hope, IN museum (Bartholomew County)",
+    "phone": "",
+    "address": "",
+    "website": "",
+    "hours": ""
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// APP LOGIC — you shouldn't need to touch anything below this line
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Init text from CONFIG ──
+document.getElementById('logoText').innerHTML = `${CONFIG.cityName} <span class="logo-badge">411</span>`;
+document.getElementById('heroTitle').textContent = `Find help in ${CONFIG.cityName}`;
+document.getElementById('footerCity').textContent = `${CONFIG.cityName} 411`;
+document.getElementById('guideCityName').textContent = CONFIG.cityName;
+
+// ── Alert banner ──
+const banner = document.getElementById('alertBanner');
+if (CONFIG.alertActive) {
+  banner.classList.remove('hidden');
+  document.getElementById('alertBannerMsg').textContent = CONFIG.alertText;
+  window.__alertUrl = CONFIG.alertUrl;
+}
+
+// ── Category tiles ──
+const catGrid = document.getElementById('catGrid');
+const activeCategories = new Set();
+let currentQuery = '';
+
+CONFIG.categories.forEach(c => {
+  const tile = document.createElement('div');
+  tile.className = 'cat-tile';
+  tile.dataset.cat = c.name;
+  tile.innerHTML = `<span class="cat-icon">${c.icon}</span><span class="cat-name">${c.name}</span>`;
+  tile.addEventListener('click', () => {
+    currentQuery = '';
+    document.getElementById('searchInput').value = '';
+    if (activeCategories.has(c.name)) { activeCategories.delete(c.name); tile.classList.remove('active'); }
+    else { activeCategories.add(c.name); tile.classList.add('active'); }
+    if (activeCategories.size === 0) { clearAll(); return; }
+    const filtered = resources.filter(r => activeCategories.has(r.category));
+    const title = activeCategories.size === 1 ? [...activeCategories][0] : [...activeCategories].join(' + ');
+    showResults(filtered, title);
+  });
+  catGrid.appendChild(tile);
+});
+
+function clearAll() {
+  activeCategories.clear();
+  currentQuery = '';
+  document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('active'));
+  document.getElementById('resultsArea').style.display = 'none';
+  document.getElementById('browsePrompt').style.display = 'block';
+}
+
+function showResults(list, title) {
+  document.getElementById('browsePrompt').style.display = 'none';
+  document.getElementById('resultsArea').style.display = 'block';
+  document.getElementById('resultsTitle').textContent = title || 'Resources';
+  document.getElementById('resultsCount').textContent = `${list.length} resource${list.length !== 1 ? 's' : ''}`;
+  document.getElementById('clearFilter').style.display = (activeCategories.size || currentQuery) ? 'inline' : 'none';
+  const container = document.getElementById('resourceList');
+  if (list.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:40px 24px;color:var(--ink-light)"><div style="font-size:32px">🔍</div><p>No resources found. Try a different search or category.</p></div>`;
+    return;
+  }
+  container.innerHTML = list.map(r => `
+    <div class="resource-card">
+      <div class="card-top">
+        <div class="card-name">${r.name}</div>
+        <div class="card-tags">
+          <span class="tag tag-cat">${r.category}</span>
+          <span class="tag tag-scope">${r.scope}</span>
+          ${r.free ? '<span class="tag tag-free">Free</span>' : ''}${r.partner ? '<span class="tag tag-partner">United Way Partner</span>' : ''}
+        </div>
+      </div>
+      <div class="card-desc">${r.desc}</div>
+      <div class="card-meta">
+        ${r.phone ? `<span>📞 <a href="tel:${r.phone}">${r.phone}</a></span>` : ''}
+        ${r.address ? `<span>📍 ${r.address}</span>` : ''}
+        ${r.website ? `<span>🌐 <a href="${r.website}" target="_blank" rel="noopener">Visit website</a></span>` : ''}
+        ${r.hours ? `<span>🕐 ${r.hours}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function doSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) return;
+  currentQuery = query;
+  activeCategories.clear();
+  document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('active'));
+  const lower = query.toLowerCase();
+  const keywords = lower.split(/\s+/);
+  const filtered = resources.filter(r => {
+    const text = `${r.name} ${r.category} ${r.desc}`.toLowerCase();
+    return keywords.some(k => text.includes(k));
+  });
+  showResults(filtered, `Results for "${query}"`);
+}
+document.getElementById('searchBtn').addEventListener('click', doSearch);
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+// ── Page switching ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.page === name));
+}
+</script>
+</body>
+</html>
