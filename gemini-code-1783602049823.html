@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Columbus 411 City Resource Guide</title>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     HOW TO REBRAND THIS TEMPLATE FOR YOUR CITY
+     1. Edit the CONFIG object near the top of the <script> block at the
+        bottom of this file — city name, tagline, categories.
+     2. Add your real resources to the `resources` array — see the
+        EDITOR'S GUIDE comment right above it.
+     3. Fill in the City Services page (below the Directory page markup)
+        with your city's actual trash/parking/utilities/voting/etc info —
+        see the placeholder sections marked TODO.
+     4. Recolor the theme by editing the CSS variables in :root below.
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    /* ── THEME COLORS — Columbus, Indiana Theme ── */
+    --primary: #003DA5;
+    --primary-dark: #002A75;
+    --primary-light: #E8EFFE;
+    --accent: #F5A623;
+    --accent-dark: #D4891A;
+    --bg: #F8F6F0;
+    --white: #FFFFFF;
+    --ink: #1A1A1A;
+    --ink-mid: #4A4A4A;
+    --ink-light: #8A8A8A;
+    --border: #D8D4CC;
+    --success: #1A7A4A;
+    --radius: 8px;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+  /* ── ALERT BANNER (dismissible, toggled via CONFIG.alertActive) ── */
+  .alert-banner { background: #C0202A; color: #fff; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px; font-size: 14px; }
+  .alert-banner.hidden { display: none; }
+  .alert-banner-text { cursor: pointer; display: flex; align-items: center; gap: 8px; text-align: center; flex: 1; justify-content: center; }
+  .alert-banner-text:hover { text-decoration: underline; }
+  .alert-banner-close { background: none; border: none; color: #fff; font-size: 16px; cursor: pointer; padding: 2px 6px; opacity: 0.85; }
+  .alert-banner-close:hover { opacity: 1; }
+
+  /* ── NAV ── */
+  header { background: var(--primary); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .header-logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.04em; color: var(--white); display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .logo-badge { background: var(--accent); color: var(--ink); font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab { background: none; border: none; color: rgba(255,255,255,0.65); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 14px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+  .nav-tab:hover { background: rgba(255,255,255,0.1); color: white; }
+  .nav-tab.active { background: rgba(255,255,255,0.18); color: white; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HERO / SEARCH (Directory page) ── */
+  .hero { background: var(--primary); padding: 40px 24px 48px; text-align: center; }
+  .hero h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(30px, 7vw, 50px); color: var(--white); }
+  .hero p { color: rgba(255,255,255,0.85); margin-top: 8px; font-size: 16px; }
+  .search-bar { max-width: 640px; margin: 24px auto 0; display: flex; gap: 8px; }
+  .search-input { flex: 1; padding: 14px 16px; border-radius: var(--radius); border: none; font-size: 15px; font-family: inherit; }
+  .search-btn { background: var(--accent); color: var(--ink); border: none; border-radius: var(--radius); padding: 0 22px; font-weight: 700; cursor: pointer; }
+
+  /* ── CATEGORY GRID ── */
+  .cat-grid { max-width: 980px; margin: -20px auto 0; padding: 0 24px 8px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; position: relative; z-index: 5; }
+  .cat-tile { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .cat-tile:hover { border-color: var(--primary); }
+  .cat-tile.active { background: var(--primary-light); border-color: var(--primary); }
+  .cat-icon { font-size: 22px; display: block; margin-bottom: 6px; }
+  .cat-name { font-size: 12.5px; font-weight: 600; }
+
+  /* ── RESULTS ── */
+  .results-wrap { max-width: 900px; margin: 32px auto; padding: 0 24px; }
+  .results-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .results-header h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .results-count { color: var(--ink-light); font-size: 13px; }
+  .resource-list { display: flex; flex-direction: column; gap: 12px; }
+  .resource-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px 20px; transition: border-color 0.15s, box-shadow 0.15s; }
+  .resource-card:hover { border-color: var(--primary); box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .card-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 10.5px; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; }
+  .tag-cat { background: var(--primary-light); color: var(--primary); }
+  .tag-scope { background: #F0F0F0; color: var(--ink-mid); }
+  .tag-free { background: #E3F5EA; color: var(--success); }
+  .card-desc { margin: 8px 0; font-size: 14px; color: var(--ink-mid); line-height: 1.5; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; }
+  .card-meta a { color: var(--primary); }
+
+  /* ── CITY SERVICES / GUIDE PAGE ── */
+  .guide-hero { background: var(--primary); padding: 40px 24px 48px; text-align: center; position: relative; overflow: hidden; }
+  .guide-hero::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 32px; background: var(--bg); clip-path: ellipse(55% 100% at 50% 100%); }
+  .guide-hero h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: clamp(30px, 7vw, 48px); line-height: 1; color: var(--white); text-transform: uppercase; margin-bottom: 10px; }
+  .guide-hero h1 span { color: var(--accent); }
+  .guide-hero p { color: rgba(255,255,255,0.75); font-size: 15px; max-width: 480px; margin: 0 auto; }
+
+  .guide-main { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
+  .guide-section { margin-bottom: 44px; }
+  .guide-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 3px solid var(--accent); }
+  .guide-section-icon { font-size: 24px; }
+  .guide-section-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink); }
+
+  .guide-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .guide-card { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; transition: border-color 0.15s, box-shadow 0.15s; }
+  .guide-card:hover { border-color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+  .guide-card-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.02em; color: var(--ink); margin-bottom: 6px; }
+  .guide-card-body { font-size: 13.5px; color: var(--ink-mid); line-height: 1.6; margin-bottom: 10px; }
+  .guide-card-body strong { color: var(--ink); font-weight: 600; }
+  .guide-links { display: flex; flex-wrap: wrap; gap: 8px; }
+  .guide-link { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--primary); text-decoration: none; background: var(--primary-light); padding: 4px 10px; border-radius: 4px; transition: background 0.15s; }
+  .guide-link:hover { background: #d0deff; }
+
+  .guide-tip { background: #FFF8EC; border: 1.5px solid var(--accent); border-radius: var(--radius); padding: 14px 18px; font-size: 13.5px; color: var(--ink-mid); line-height: 1.6; margin-top: 12px; }
+  .guide-tip strong { color: var(--ink); }
+
+  footer { text-align: center; padding: 28px 20px; font-size: 13px; color: var(--ink-light); border-top: 1px solid var(--border); }
+  footer a { color: var(--primary); }
+
+  @media (max-width: 520px) { .guide-cards { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { .nav-tab { padding: 8px 10px; font-size: 13px; } }
+</style>
+</head>
+<body>
+
+<div class="alert-banner hidden" id="alertBanner">
+  <div class="alert-banner-text" id="alertBannerText" onclick="if(window.__alertUrl) window.open(window.__alertUrl,'_blank')">
+    <span class="alert-banner-icon">⚠️</span>
+    <span id="alertBannerMsg"></span>
+  </div>
+  <button class="alert-banner-close" onclick="document.getElementById('alertBanner').classList.add('hidden')">✕</button>
+</div>
+
+<header>
+  <div class="header-logo" onclick="showPage('directory')">
+    <span id="logoText">Columbus <span class="logo-badge">411</span></span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-page="directory" onclick="showPage('directory')">Directory</button>
+    <button class="nav-tab" data-page="services" onclick="showPage('services')">City Services</button>
+  </div>
+</header>
+
+<!-- ══════════════════ PAGE 1: DIRECTORY ══════════════════ -->
+<div class="page active" id="page-directory">
+  <div class="hero">
+    <h1 id="heroTitle">Find help in Columbus</h1>
+    <p id="heroSubtitle">Verified nonprofit and government resources for residents.</p>
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" type="text" placeholder="What do you need help with? (e.g. rent, food, job training…)" />
+      <button class="search-btn" id="searchBtn">Search</button>
+    </div>
+  </div>
+
+  <div class="cat-grid" id="catGrid"><!-- populated from CONFIG.categories by JS --></div>
+
+  <div class="results-wrap">
+    <div id="browsePrompt" style="text-align:center;padding:40px 24px;color:var(--ink-light)">
+      <div style="font-size:32px;margin-bottom:8px">🔎</div>
+      <p>Search above or pick a category to browse resources.</p>
+    </div>
+    <div id="resultsArea" style="display:none">
+      <div class="results-header">
+        <h2 id="resultsTitle">Resources</h2>
+        <span class="results-count" id="resultsCount"></span>
+        <a href="#" id="clearFilter" style="display:none;font-size:13px" onclick="clearAll();return false;">Clear</a>
+      </div>
+      <div class="resource-list" id="resourceList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ PAGE 2: CITY SERVICES ══════════════════ -->
+<div class="page" id="page-services">
+  <div class="guide-hero">
+    <h1>Living in <span id="guideCityName">Columbus</span></h1>
+    <p>Everyday city services — trash days, parking rules, utilities, voting, and more. Links go directly to official city sources so the info stays current.</p>
+  </div>
+
+  <div class="guide-main">
+
+    <!-- ── TRASH & RECYCLING ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🗑️</span>
+        <span class="guide-section-title">Trash & Recycling</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Find Your Pickup Day</div>
+          <div class="guide-card-body">The City of Columbus Sanitation Department collects residential trash weekly using designated city-issued carts. Residents can view color-coded collection maps and search schedules online.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="https://www.columbus.in.gov/public-works/sanitation-department/" target="_blank">🔍 Find my pickup day</a>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Recycling Program</div>
+          <div class="guide-card-body">Curbside recycling is operated on a bi-weekly basis alongside standard trash services. Residents can recycle clean paper, cardboard, plastics (#1-#7), aluminum, and glass inside the designated recycling container.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="https://www.columbus.in.gov/public-works/recycling/" target="_blank">♻️ Recycling Info</a>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Bulk & Yard Waste Pickup</div>
+          <div class="guide-card-body">The city provides loose leaf collection during autumn months and regular curbside yard waste pickup for grass and limbs. Heavy curbside bulk items require an appointment scheduled via phone.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="https://www.columbus.in.gov/public-works/yard-waste-and-compost-site/" target="_blank">🍂 Yard waste info</a>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Missed Pickup or Illegal Dumping</div>
+          <div class="guide-card-body">If your collection was missed or you spot illegal dumping, submit a report or call the Columbus Sanitation Department directly to coordinate a resolution.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="https://www.columbus.in.gov/public-works/sanitation-department/" target="_blank">📱 Contact Sanitation</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PARKING ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🚗</span>
+        <span class="guide-section-title">Parking</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Downtown Parking Regulations</div>
+          <div class="guide-card-body">Downtown Columbus provides free timed on-street parking alongside multiple public garages. Pay strict attention to posted limits to avoid standard citations from parking enforcement.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.columbus.in.gov/police/divisions/parking-enforcement/" target="_blank">🧹 Parking Info</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Pay a Parking Ticket</div>
+          <div class="guide-card-body">Parking citations are managed through the Columbus Police Department and City Clerk's office. Fines can be processed online or paid in person at City Hall.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.columbus.in.gov/police/divisions/parking-enforcement/" target="_blank">💳 Ticket Info</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── UTILITIES ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">💧</span>
+        <span class="guide-section-title">Water & Utilities</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Start or Transfer Water Service</div>
+          <div class="guide-card-body">Columbus City Utilities handles public water and sewer infrastructure. New accounts require an application form, proof of identification, and a standard deposit processed at their main office.</div>
+          <div class="guide-links"><a class="guide-link" href="https://columbusutilities.org/" target="_blank">💧 Start water service</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Pay Your Water Bill</div>
+          <div class="guide-card-body">Residents can manage monthly utility expenses securely through the online bill-pay portal, by mail, or through direct auto-draft setups.</div>
+          <div class="guide-links"><a class="guide-link" href="https://columbusutilities.org/" target="_blank">💳 Pay online</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Electric & Gas Service</div>
+          <div class="guide-card-body">Electricity is primarily supplied by Duke Energy, while natural gas pipeline connections across Bartholomew County are managed by CenterPoint Energy.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="https://www.duke-energy.com" target="_blank">⚡ Duke Energy</a>
+            <a class="guide-link" href="https://www.centerpointenergy.com" target="_blank">🔥 CenterPoint Energy</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VOTING & CIVIC LIFE ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🗳️</span>
+        <span class="guide-section-title">Voting & Civic Life</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Register to Vote</div>
+          <div class="guide-card-body">Voter registration is handled via the state's online registry portal or locally at the Bartholomew County Clerk's office. Ensure registration is completed at least 29 days before an election.</div>
+          <div class="guide-links"><a class="guide-link" href="https://indianavoters.in.gov/" target="_blank">✅ Register online</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Find Your Polling Place</div>
+          <div class="guide-card-body">Bartholomew County uses designated voting centers. Eligible residents can verify their active registration status, track sample ballots, and view nearby polling locations using Indiana's central tracker.</div>
+          <div class="guide-links"><a class="guide-link" href="https://indianavoters.in.gov/" target="_blank">📍 Find my polling place</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Find Your Council Rep</div>
+          <div class="guide-card-body">The Columbus City Council represents distinct geographical districts alongside at-large seats. View the official city maps to discover who represents your address.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.columbus.in.gov/city-council/" target="_blank">🗺️ District map</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SCHOOLS & EDUCATION ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🏫</span>
+        <span class="guide-section-title">Schools & Education</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Enroll in Public Schools</div>
+          <div class="guide-card-body">Bartholomew Consolidated School Corporation (BCSC) serves public K-12 students in Columbus. Enrollment requires standard residency verifications, health records, and student birth certificates.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.bcscschools.org/" target="_blank">📚 Enrollment info</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Adult Education & High School Equivalency</div>
+          <div class="guide-card-body">The McDowell Education Center provides free adult education courses, career certifications, English language training (ELL), and High School Equivalency (HSE) preparation.</div>
+          <div class="guide-links"><a class="guide-link" href="https://mcdowell.bcscschools.org/" target="_blank">🎓 Adult education</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ID, LICENSES & VEHICLES ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🪪</span>
+        <span class="guide-section-title">ID, Licenses & Vehicles</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Driver's License & Vehicle Registration</div>
+          <div class="guide-card-body">The Indiana Bureau of Motor Vehicles (BMV) operates a branch in Columbus. New residents must update credentials, secure state IDs, and process titles within 60 days of moving.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.in.gov/bmv/" target="_blank">🪪 Visit Indiana BMV</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PERMITS, PROPERTY & TAXES ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">📋</span>
+        <span class="guide-section-title">Permits, Property & Taxes</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Building Permits & Zoning</div>
+          <div class="guide-card-body">The Columbus-Bartholomew County Planning Department processes zoning variances, commercial developments, and structurally intensive residential improvements.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.columbus.in.gov/planning/" target="_blank">🔨 Building permits</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Property Taxes</div>
+          <div class="guide-card-body">Property tax assessments are performed by the county assessor, while payments are processed bi-annually by the Bartholomew County Treasurer's office.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.bartholomew.in.gov/treasurer.html" target="_blank">💳 Pay property taxes</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PETS ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🐾</span>
+        <span class="guide-section-title">Pets & Animals</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Animal Care Services & Licensing</div>
+          <div class="guide-card-body">City of Columbus Animal Care Services manages local dog licensing requirements, enforces municipal welfare ordinances, facilitates pet adoptions, and handles stray pick-ups.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.columbus.in.gov/animal-care-services/" target="_blank">🐕 Animal Services</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SAFETY & EMERGENCY ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🚨</span>
+        <span class="guide-section-title">Safety & Emergency</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Emergency Numbers</div>
+          <div class="guide-card-body">Always phone 911 for live emergencies. For active local situations requiring non-emergency police dispatch or deputy investigation within county borders, dial the administrative dispatch line.</div>
+          <div class="guide-links">
+            <a class="guide-link" href="tel:911">🆘 911 (Emergencies)</a>
+            <a class="guide-link" href="tel:8123791689">📞 Dispatch: (812) 379-1689</a>
+          </div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Emergency Alerts</div>
+          <div class="guide-card-body">Bartholomew County Emergency Management distributes time-critical severe weather hazards and civil infrastructure warnings through the countywide Everbridge alert network.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.bartholomew.in.gov/emergency-management.html" target="_blank">🔔 Sign up for alerts</a></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NEIGHBORHOOD LIFE ── -->
+    <div class="guide-section">
+      <div class="guide-section-header">
+        <span class="guide-section-icon">🌳</span>
+        <span class="guide-section-title">Neighborhood Life</span>
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card">
+          <div class="guide-card-title">Parks & Recreation</div>
+          <div class="guide-card-body">Columbus Parks and Recreation coordinates community centers, multi-use athletic trails, seasonal swimming pools, public golf layouts, and local activity programs.</div>
+          <div class="guide-links"><a class="guide-link" href="https://www.columbus.in.gov/parks-rec/" target="_blank">⛳ Parks & recreation</a></div>
+        </div>
+        <div class="guide-card">
+          <div class="guide-card-title">Bartholomew County Public Library</div>
+          <div class="guide-card-body">Residents can register for a free library card to browse thousands of physical volumes, request digital media checkouts, use computer terminals, or utilize quiet public study rooms.</div>
+          <div class="guide-links"><a class="guide-link" href="https://mybcpl.org/" target="_blank">📚 Get a library card</a></div>
+        </div>
+      </div>
+      <div class="guide-tip">
+        <strong>New to Columbus?</strong> Check the Directory tab to look up specialized community support organizations and localized assistance programs.
+      </div>
+    </div>
+
+  </div><!-- end guide-main -->
+</div>
+
+<footer>
+  <strong id="footerCity">Columbus 411</strong> — a community resource guide for Columbus residents.<br>
+  Information links to official sources but may change — always verify directly.
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFIG — rebrand the whole site for Columbus, Indiana
+// ═══════════════════════════════════════════════════════════════════════════
+const CONFIG = {
+  cityName: "Columbus",
+  alertActive: false,
+  alertText: "Severe weather watch — follow directives from emergency management.",
+  alertUrl: "https://www.bartholomew.in.gov/emergency-management.html",
+
+  categories: [
+    { name: "Crisis & Emergency", icon: "🆘" },
+    { name: "Food & Hunger", icon: "🥗" },
+    { name: "Housing", icon: "🏠" },
+    { name: "Health", icon: "🏥" },
+    { name: "Employment", icon: "💼" },
+    { name: "Youth & Education", icon: "🎒" },
+    { name: "Seniors", icon: "👴" },
+    { name: "Legal", icon: "⚖️" },
+    { name: "Utilities", icon: "💡" },
+    { name: "Transportation", icon: "🚌" },
+    { name: "Family", icon: "👨‍👩‍👧" },
+    { name: "Financial Assistance", icon: "💵" },
+    { name: "Disability Services", icon: "♿" }
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DIRECTORY RESOURCES ARRAY
+// ═══════════════════════════════════════════════════════════════════════════
+const resources = [
+  // Crisis & Emergency
+  { name: "Indiana 211", category: "Crisis & Emergency", scope: "Statewide", free: true,
+    desc: "A free state program connecting residents with local support infrastructure including winter warming shelters, food pantries, and community navigators.",
+    phone: "211", address: "", website: "https://in211.communityos.org", hours: "24/7" },
+  { name: "Turning Point Domestic Violence Services", category: "Crisis & Emergency", scope: "Regional", free: true,
+    desc: "Provides emergency shelter, professional crisis intervention, safety planning, and legal advocacy for individuals experiencing intimate partner violence.",
+    phone: "(800) 221-6311", address: "", website: "https://www.turningpointdv.org", hours: "24/7" },
+  { name: "Centerstone Crisis Services", category: "Crisis & Emergency", scope: "Regional", free: true,
+    desc: "Offers 24-hour telephone triage, behavioral evaluations, and mobile community intervention teams for psychiatric or psychological emergencies.",
+    phone: "(800) 832-5442", address: "720 N Marr Rd, Columbus, IN 47201", website: "https://centerstone.org", hours: "24/7" },
+
+  // Food & Hunger
+  { name: "Love Chapel Food Pantry", category: "Food & Hunger", scope: "Citywide", free: true,
+    desc: "Provides emergency food baskets and regular grocery selections to low-income individuals across Bartholomew County.",
+    phone: "(812) 372-9421", address: "292 Center St, Columbus, IN 47201", website: "https://lovechapel-columbus.org", hours: "Mon-Sat 9:00 AM - 12:00 PM" },
+  { name: "Salvation Army Columbus Corps", category: "Food & Hunger", scope: "Citywide", free: true,
+    desc: "Operates an on-site emergency food cupboard alongside targeted seasonal family distribution programs.",
+    phone: "(812) 372-7118", address: "2525 Illinois Ave, Columbus, IN 47201", website: "https://centralusa.salvationarmy.org/columbusin/", hours: "Mon-Fri 9:00 AM - 4:00 PM" },
+  { name: "Community Downtown Food Pantry", category: "Food & Hunger", scope: "Citywide", free: true,
+    desc: "A local food assistance project offering supplementary grocery items to qualifying neighborhood individuals.",
+    phone: "(812) 348-6257", address: "522 Seventh St, Columbus, IN 47201", website: "https://www.communitydowntown.org", hours: "Varies" },
+
+  // Housing
+  { name: "Columbus Housing Authority", category: "Housing", scope: "Citywide", free: true,
+    desc: "Coordinates low-income public housing options and administers localized Section 8 Housing Choice Voucher rent programs.",
+    phone: "(812) 378-0005", address: "799 Enterprise Dr, Columbus, IN 47201", website: "https://www.columbushousingauthority.org", hours: "Mon-Fri 8:00 AM - 4:30 PM" },
+  { name: "Brighter Days Housing", category: "Housing", scope: "Citywide", free: true,
+    desc: "An emergency overnight shelter solution for unhoused adults in the area, providing standard bedding and fundamental sanitary amenities.",
+    phone: "(812) 344-4530", address: "421 S Mapleton St, Columbus, IN 47201", website: "https://lovechapel-columbus.org", hours: "Daily 6:00 PM - 8:00 AM" },
+  { name: "Thrive Alliance Housing", category: "Housing", scope: "Regional", free: true,
+    desc: "Develops and manages accessible, budget-conscious rental complexes specifically optimized for seniors and individuals living with functional physical traits.",
+    phone: "(812) 372-6918", address: "1531 13th St, Columbus, IN 47201", website: "https://thrivealliance.org", hours: "Mon-Fri 8:30 AM - 5:00 PM" },
+
+  // Health
+  { name: "Bartholomew County Health Department", category: "Health", scope: "Regional", free: true,
+    desc: "Coordinates routine childhood immunizations, public health nursing diagnostics, safety inspections, and official vital records storage.",
+    phone: "(812) 379-1550", address: "440 Third St, Columbus, IN 47201", website: "https://www.bartholomew.in.gov/health.html", hours: "Mon-Fri 8:00 AM - 5:00 PM" },
+  { name: "Volunteers in Medicine (VIM) Clinic", category: "Health", scope: "Regional", free: true,
+    desc: "Provides complimentary primary medical interventions and necessary prescription services to un-insured or under-insured county workers.",
+    phone: "(812) 375-1350", address: "945 Eleventh St, Columbus, IN 47201", website: "https://www.vimcolumbus.org", hours: "Mon-Fri 9:00 AM - 5:00 PM" },
+  { name: "Centerstone Behavioral Health", category: "Health", scope: "Regional", free: false,
+    desc: "Provides therapeutic psychiatric treatment, personal outpatient mental health counseling, and structured chemical substance rehabilitation pathways.",
+    phone: "(812) 372-7877", address: "720 N Marr Rd, Columbus, IN 47201", website: "https://centerstone.org", hours: "Mon-Fri 8:00 AM - 5:00 PM" },
+
+  // Employment
+  { name: "WorkOne Southeast Columbus", category: "Employment", scope: "Regional", free: true,
+    desc: "Provides localized career job boards, free resume refinement workspaces, individual vocational assessments, and state employment training subsidies.",
+    phone: "(812) 376-3351", address: "4555 Central Ave, Columbus, IN 47203", website: "https://www.workonesoutheast.org", hours: "Mon-Fri 8:00 AM - 4:30 PM" },
+  { name: "Goodwill Education & Career Center", category: "Employment", scope: "Citywide", free: true,
+    desc: "Provides direct re-entry job placements, free digital software competency workshops, and individualized career coaching.",
+    phone: "(812) 418-4044", address: "1480 N National Rd, Columbus, IN 47201", website: "https://www.goodwillindy.org", hours: "Mon-Fri 9:00 AM - 5:00 PM" },
+
+  // Youth & Education
+  { name: "Foundation For Youth (FFY)", category: "Youth & Education", scope: "Citywide", free: false,
+    desc: "Coordinates comprehensive Boys & Girls Club afterschool environments, structured youth sports, and competitive public aquatics programs.",
+    phone: "(812) 372-7867", address: "405 Hope Ave, Columbus, IN 47201", website: "https://www.foundationforyouth.com", hours: "Mon-Fri 9:00 AM - 6:00 PM" },
+  { name: "Su Casa Columbus", category: "Youth & Education", scope: "Citywide", free: true,
+    desc: "Assists Latino families by bridging cultural barriers, extending educational enrichment programs, and facilitating academic translation support.",
+    phone: "(812) 375-9370", address: "1531 13th St, Columbus, IN 47201", website: "https://www.sucasacolumbus.org", hours: "By Appointment" },
+
+  // Seniors
+  { name: "Thrive Alliance", category: "Seniors", scope: "Regional", free: true,
+    desc: "Acts as the Area Structural Agency on Aging, delivering home-delivered nutrition routes, protective case management, and caregiver relief.",
+    phone: "(812) 372-6918", address: "1531 13th St, Columbus, IN 47201", website: "https://thrivealliance.org", hours: "Mon-Fri 8:30 AM - 5:00 PM" },
+  { name: "Mill Race Center", category: "Seniors", scope: "Citywide", free: false,
+    desc: "An active community programming infrastructure tailored for adults aged 50 and older, offering fitness, social clubs, and educational resources.",
+    phone: "(812) 376-9241", address: "900 Lindsey St, Columbus, IN 47201", website: "https://millracecenter.org", hours: "Mon-Fri 8:00 AM - 5:00 PM" },
+
+  // Legal
+  { name: "Legal Aid Society of Southeastern Indiana", category: "Legal", scope: "Regional", free: true,
+    desc: "Delivers civil law counsel and pro-bono support for pressing matters involving unlawful tenant evictions or minor family protection filings.",
+    phone: "(812) 378-0358", address: "1531 13th St, Columbus, IN 47201", website: "https://www.legalaidsei.org", hours: "Mon-Fri 9:00 AM - 5:00 PM" },
+
+  // Utilities
+  { name: "Human Services, Inc. (Bartholomew County)", category: "Utilities", scope: "Regional", free: true,
+    desc: "Administers the Energy Assistance Program (EAP) to deliver financial assistance for winter heating and summer cooling utility costs.",
+    phone: "(812) 372-8407", address: "1531 13th St, Columbus, IN 47201", website: "https://www.hsi-indiana.com", hours: "Mon-Fri 8:00 AM - 4:30 PM" },
+
+  // Transportation
+  { name: "ColumBUS Transit", category: "Transportation", scope: "Citywide", free: false,
+    desc: "Operates five scheduled urban fixed bus routes alongside localized Call-A-Bus paratransit ride arrangements for residents.",
+    phone: "(812) 376-2506", address: "850 Brown St, Columbus, IN 47201", website: "https://www.columbus.in.gov/columbus-transit/", hours: "Mon-Fri 6:00 AM - 8:00 PM, Sat 6:00 AM - 6:00 PM" },
+
+  // Family
+  { name: "Fireman's Cheer Fund", category: "Family", scope: "Citywide", free: true,
+    desc: "A charity run by the Columbus Fire Department distributing holiday gift packages to families facing economic hardship.",
+    phone: "(812) 376-2679", address: "1101 Jackson St, Columbus, IN 47201", website: "https://www.columbus.in.gov/fire/firemans-cheer-fund/", hours: "Seasonal" },
+
+  // Financial Assistance
+  { name: "Bartholomew County Township Trustees", category: "Financial Assistance", scope: "Regional", free: true,
+    desc: "Provides legally mandated emergency poor relief for basic necessities like shelter, utilities, burial costs, or life-saving medicine.",
+    phone: "(812) 372-8257", address: "535 3rd St, Columbus, IN 47201", website: "https://www.bartholomew.in.gov", hours: "Varies by Township" },
+
+  // Disability Services
+  { name: "Developmental Services, Inc. (DSI)", category: "Disability Services", scope: "Regional", free: true,
+    desc: "Provides vocational instruction options, individual supportive living services, and independent life growth pathways to disabled citizens.",
+    phone: "(812) 376-9404", address: "2920 Tenth St, Columbus, IN 47201", website: "https://www.dsiservices.org", hours: "Mon-Fri 8:00 AM - 4:30 PM" }
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// APP LOGIC
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Init text from CONFIG
+document.getElementById('logoText').innerHTML = `${CONFIG.cityName} <span class="logo-badge">411</span>`;
+document.getElementById('heroTitle').textContent = `Find help in ${CONFIG.cityName}`;
+document.getElementById('footerCity').textContent = `${CONFIG.cityName} 411`;
+document.getElementById('guideCityName').textContent = CONFIG.cityName;
+
+// Alert banner
+const banner = document.getElementById('alertBanner');
+if (CONFIG.alertActive) {
+  banner.classList.remove('hidden');
+  document.getElementById('alertBannerMsg').textContent = CONFIG.alertText;
+  window.__alertUrl = CONFIG.alertUrl;
+}
+
+// Category tiles
+const catGrid = document.getElementById('catGrid');
+const activeCategories = new Set();
+let currentQuery = '';
+
+CONFIG.categories.forEach(c => {
+  const tile = document.createElement('div');
+  tile.className = 'cat-tile';
+  tile.dataset.cat = c.name;
+  tile.innerHTML = `<span class="cat-icon">${c.icon}</span><span class="cat-name">${c.name}</span>`;
+  tile.addEventListener('click', () => {
+    currentQuery = '';
+    document.getElementById('searchInput').value = '';
+    if (activeCategories.has(c.name)) { activeCategories.delete(c.name); tile.classList.remove('active'); }
+    else { activeCategories.add(c.name); tile.classList.add('active'); }
+    if (activeCategories.size === 0) { clearAll(); return; }
+    const filtered = resources.filter(r => activeCategories.has(r.category));
+    const title = activeCategories.size === 1 ? [...activeCategories][0] : [...activeCategories].join(' + ');
+    showResults(filtered, title);
+  });
+  catGrid.appendChild(tile);
+});
+
+function clearAll() {
+  activeCategories.clear();
+  currentQuery = '';
+  document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('active'));
+  document.getElementById('resultsArea').style.display = 'none';
+  document.getElementById('browsePrompt').style.display = 'block';
+}
+
+function showResults(list, title) {
+  document.getElementById('browsePrompt').style.display = 'none';
+  document.getElementById('resultsArea').style.display = 'block';
+  document.getElementById('resultsTitle').textContent = title || 'Resources';
+  document.getElementById('resultsCount').textContent = `${list.length} resource${list.length !== 1 ? 's' : ''}`;
+  document.getElementById('clearFilter').style.display = (activeCategories.size || currentQuery) ? 'inline' : 'none';
+  const container = document.getElementById('resourceList');
+  if (list.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:40px 24px;color:var(--ink-light)"><div style="font-size:32px">🔍</div><p>No resources found. Try a different search or category.</p></div>`;
+    return;
+  }
+  container.innerHTML = list.map(r => `
+    <div class="resource-card">
+      <div class="card-top">
+        <div class="card-name">${r.name}</div>
+        <div class="card-tags">
+          <span class="tag tag-cat">${r.category}</span>
+          <span class="tag tag-scope">${r.scope}</span>
+          ${r.free ? '<span class="tag tag-free">Free</span>' : ''}
+        </div>
+      </div>
+      <div class="card-desc">${r.desc}</div>
+      <div class="card-meta">
+        ${r.phone ? `<span>📞 <a href="tel:${r.phone}">${r.phone}</a></span>` : ''}
+        ${r.address ? `<span>📍 ${r.address}</span>` : ''}
+        ${r.website ? `<span>🌐 <a href="${r.website}" target="_blank" rel="noopener">Visit website</a></span>` : ''}
+        ${r.hours ? `<span>🕐 ${r.hours}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function doSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) return;
+  currentQuery = query;
+  activeCategories.clear();
+  document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('active'));
+  const lower = query.toLowerCase();
+  const keywords = lower.split(/\s+/);
+  const filtered = resources.filter(r => {
+    const text = `${r.name} ${r.category} ${r.desc}`.toLowerCase();
+    return keywords.some(k => text.includes(k));
+  });
+  showResults(filtered, `Results for "${query}"`);
+}
+document.getElementById('searchBtn').addEventListener('click', doSearch);
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+// Page switching
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.toggle('active', t.dataset.page === name));
+}
+</script>
+</body>
+</html>
