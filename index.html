@@ -127,6 +127,7 @@
   </div>
 </header>
 
+<!-- ══════════════════ PAGE 1: DIRECTORY ══════════════════ -->
 <div class="page active" id="page-directory">
   <div class="hero">
     <h1 id="heroTitle">Find help in [CITY]</h1>
@@ -155,6 +156,7 @@
   </div>
 </div>
 
+<!-- ══════════════════ PAGE 2: CITY SERVICES ══════════════════ -->
 <div class="page" id="page-services">
   <div class="guide-hero">
     <h1>Living in <span id="guideCityName">[City]</span></h1>
@@ -163,6 +165,7 @@
 
   <div class="guide-main">
 
+    <!-- ── TRASH & RECYCLING ── -->
     <div class="guide-section">
       <div class="guide-section-header">
         <span class="guide-section-icon">🗑️</span>
@@ -186,6 +189,7 @@
       </div>
     </div>
 
+    <!-- ── UTILITIES ── -->
     <div class="guide-section">
       <div class="guide-section-header">
         <span class="guide-section-icon">💧</span>
@@ -200,6 +204,7 @@
       </div>
     </div>
 
+    <!-- ── SAFETY & EMERGENCY ── -->
     <div class="guide-section">
       <div class="guide-section-header">
         <span class="guide-section-icon">🚨</span>
@@ -251,7 +256,7 @@ const CONFIG = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// RESOURCES DATA (ALL 80 ENTRIES CO-MAPPED)
+// RESOURCES DATA (ALL 86 AUDITED LISTINGS)
 // ═══════════════════════════════════════════════════════════════════════════
 const resources = [
   { name: "Advocates for Children", category: "Family", scope: "Countywide", free: true, desc: "Court Appointed Special Advocates (CASA) advocating for children.", phone: "(812) 372-2808", address: "1531 13th St, Columbus, IN 47201", website: "https://apowerfulvoice.org", hours: "" },
@@ -270,11 +275,13 @@ const resources = [
   { name: "Book Buddies", category: "Youth & Education", scope: "Citywide", free: true, desc: "Volunteer literacy mentoring assisting elementary students with reading fluency.", phone: "(812) 376-4442", address: "", website: "https://www.bcscschools.org", hours: "" },
   { name: "C4 Columbus Area Career Connection", category: "Youth & Education", scope: "Citywide", free: true, desc: "Career and technical workforce development tracks serving area high schoolers.", phone: "(812) 376-4240", address: "2300 25th St, Columbus, IN 47201", website: "https://www.bcscschools.org/c4", hours: "" },
   { name: "Calvary Community Church", category: "Family", scope: "Citywide", free: true, desc: "Faith-based community outreach programs, family spaces, and social connection.", phone: "(812) 372-3077", address: "1031 25th St, Columbus, IN 47201", website: "https://www.cccolumbus.org", hours: "" },
+  { name: "Centerstone - Columbus", category: "Health", scope: "Countywide", free: true, desc: "Provides comprehensive outpatient mental health care, addiction recovery treatment, and psychiatric evaluations for all age groups.", phone: "(800) 344-8802", address: "720 N Marr Rd, Columbus, IN 47201", website: "https://centerstone.org", hours: "" },
   { name: "Children, Inc. Learning Center", category: "Youth & Education", scope: "Citywide", free: true, desc: "Early childhood education and licensed developmental childcare center.", phone: "(812) 379-2319", address: "715 Westridge Dr, Columbus, IN 47201", website: "https://childreninclearningcenter.com", hours: "" },
   { name: "Clarity of Central Indiana", category: "Family", scope: "Countywide", free: true, desc: "Pregnancy resource care network extending evaluations, counsel, and infant items.", phone: "(866) 510-5067", address: "2420 7th St, Columbus, IN 47201", website: "https://clarityco.org", hours: "" },
   { name: "Columbus Animal Care Services", category: "Crisis & Emergency", scope: "Citywide", free: true, desc: "Municipal animal shelter handling pet adoptions, lost-and-found, and ordinances.", phone: "(812) 376-2505", address: "2730 Arnold St, Columbus, IN 47203", website: "https://www.columbus.in.gov/animal-care-services/", hours: "" },
   { name: "Columbus Area Arts Council", category: "Youth & Education", scope: "Citywide", free: true, desc: "Regional programming boosting visual arts, community events, and public displays.", phone: "(812) 376-2539", address: "401 Brown St, Columbus, IN 47201", website: "https://www.artsincolumbus.org", hours: "" },
   { name: "Columbus Bike Co-op", category: "Transportation", scope: "Citywide", free: true, desc: "Community workshop providing bicycle maintenance education and earn-a-bike programs.", phone: "(812) 379-2311", address: "1531 13th St, Columbus, IN 47201", website: "https://www.columbusbikecoop.org", hours: "" },
+  { name: "ColumBUS Transit", category: "Transportation", scope: "Citywide", free: false, desc: "Public bus transit system for the City of Columbus, operating fixed routes and dial-a-ride scheduling.", phone: "(812) 376-2506", address: "850 Brown St, Columbus, IN 47201", website: "https://www.columbus.in.gov/columbus-transit/", hours: "Mon-Fri 6:00 AM - 11:00 PM, Sat 6:00 AM - 10:00 PM" },
   { name: "Columbus Fellowship Club", category: "Health", scope: "Citywide", free: true, desc: "Safe facility hosting regular physical meeting rooms for peer-led 12-step recovery groups.", phone: "(812) 372-1324", address: "725 Elm St, Columbus, IN 47201", website: "", hours: "" },
   { name: "Columbus Firemen's Cheer Fund", category: "Food & Hunger", scope: "Citywide", free: true, desc: "Holiday box distributions delivering direct food packages and gifts to local children.", phone: "(812) 376-2679", address: "1101 Jackson St, Columbus, IN 47201", website: "https://www.columbus.in.gov/fire/firemans-cheer-fund/", hours: "Seasonal" },
   { name: "Columbus IN Pride Inc.", category: "Family", scope: "Citywide", free: true, desc: "Promotes LGBTQ+ inclusivity, local community diversity programming, and cultural events.", phone: "", address: "", website: "https://www.columbusinpride.org", hours: "" },
@@ -291,6 +298,7 @@ const resources = [
   { name: "Empty Bowls – Columbus, Indiana Fundraiser", category: "Food & Hunger", scope: "Citywide", free: true, desc: "Grassroots arts initiative raising critical operational funding for local anti-hunger hubs.", phone: "", address: "", website: "", hours: "Seasonal" },
   { name: "F.O.E Eagles #741", category: "Family", scope: "Citywide", free: true, desc: "Fraternal civic organization organizing charity meals and funding medical project donations.", phone: "(812) 372-5111", address: "930 Washington St, Columbus, IN 47201", website: "", hours: "" },
   { name: "Family School Partners", category: "Family", scope: "Citywide", free: true, desc: "Home-based learning mentoring assisting parents with small children.", phone: "(812) 376-4387", address: "1531 13th St, Columbus, IN 47201", website: "https://www.familyschoolpartners.org", hours: "" },
+  { name: "Family Service, Inc.", category: "Health", scope: "Countywide", free: true, desc: "Offers professional mental health counseling networks, family support pathways, and structural child abuse prevention programming.", phone: "(812) 372-3745", address: "1531 13th St, Columbus, IN 47201", website: "https://www.familervicebc.org", hours: "" },
   { name: "First Presbyterian Preschool", category: "Youth & Education", scope: "Citywide", free: true, desc: "Licensed early developmental morning childhood school.", phone: "(812) 376-3532", address: "512 7th St, Columbus, IN 47201", website: "https://fpccolumbus.org", hours: "" },
   { name: "First Steps South East", category: "Family", scope: "Countywide", free: true, desc: "State early intervention motor-skills checking and tracking metrics for infants.", phone: "(866) 644-2454", address: "", website: "https://www.firststepssoutheast.org", hours: "" },
   { name: "FOP 89 Youth Program (Shop With a Cop)", category: "Family", scope: "Countywide", free: true, desc: "Police lodge project pairing officers with area youth for holiday supply assistance.", phone: "", address: "", website: "", hours: "Seasonal" },
@@ -299,6 +307,7 @@ const resources = [
   { name: "Girl Scouts of Central Indiana", category: "Youth & Education", scope: "Countywide", free: true, desc: "Develops personal leadership skills and community action projects for young girls.", phone: "(312) 924-6900", address: "", website: "https://www.girlscoutsindiana.org", hours: "" },
   { name: "Gleaners Food Bank of Indiana", category: "Food & Hunger", scope: "Countywide", free: true, desc: "Regional hunger network supplying mobile food trucks and local pantry inventory.", phone: "(317) 925-0191", address: "", website: "https://www.gleaners.org", hours: "" },
   { name: "Healthy Communities", category: "Health", scope: "Countywide", free: true, desc: "CRH initiative organizing strategic wellness guidance panels and disease safety metrics.", phone: "(812) 375-3914", address: "2400 17th St, Columbus, IN 47201", website: "https://www.crh.org", hours: "" },
+  { name: "Heritage Fund — The Community Foundation of Bartholomew County", category: "Financial Assistance", scope: "Countywide", free: true, desc: "Manages major local philanthropic asset lines, providing localized non-profit grants and educational scholarships.", phone: "(812) 376-7772", address: "538 Franklin St, Columbus, IN 47201", website: "https://www.heritagefundbc.org", hours: "" },
   { name: "Hoosier Trails Council, Boy Scouts of America", category: "Youth & Education", scope: "Countywide", free: true, desc: "Coordinates physical survival outdoor tracking and youth civic leadership paths.", phone: "(812) 336-6313", address: "", website: "https://www.hoosiertrailsbsa.org", hours: "" },
   { name: "Human Services, Inc.", category: "Financial Assistance", scope: "Countywide", free: true, desc: "Community action group organizing Head Start links, WIC tracking, and utility funding.", phone: "(812) 372-8407", address: "1531 13th St, Columbus, IN 47201", website: "https://www.hsi-indiana.com", hours: "" },
   { name: "Imagination Library of Bartholomew County, Inc.", category: "Youth & Education", scope: "Countywide", free: true, desc: "Mails free, age-optimized developmental books directly to county infants monthly.", phone: "", address: "", website: "https://www.uwbarthco.org", hours: "" },
@@ -319,6 +328,7 @@ const resources = [
   { name: "Purdue Extension-Bartholomew County", category: "Youth & Education", scope: "Countywide", free: true, desc: "University research outlet handling 4-H clubs and agriculture/nutrition diagnostics.", phone: "(812) 379-1665", address: "783 S Marr Rd, Columbus, IN 47201", website: "https://extension.purdue.edu/bartholomew", hours: "" },
   { name: "REACH Columbus, Inc", category: "Family", scope: "Citywide", free: true, desc: "Child advocacy, crisis tracking, and customized safety navigation resources.", phone: "", address: "", website: "", hours: "" },
   { name: "Red Arch Community Events", category: "Family", scope: "Citywide", free: true, desc: "Organizes seasonal active lifestyle events and inclusive outdoor family health runs.", phone: "", address: "", website: "", hours: "" },
+  { name: "The Salvation Army - Columbus Corps", category: "Financial Assistance", scope: "Countywide", free: true, desc: "Provides emergency rental/utility assistance, local food pantry operations, seasonal family bundles, and youth character development.", phone: "(812) 372-7118", address: "2525 Illinois Ave, Columbus, IN 47201", website: "https://centralusa.salvationarmy.org/columbusin/", hours: "" },
   { name: "Sandi's Closet, Inc.", category: "Financial Assistance", scope: "Citywide", free: true, desc: "Supplies business workplace clothing to women completing job re-entry paths.", phone: "", address: "", website: "", hours: "" },
   { name: "Sans Souci", category: "Seniors", scope: "Citywide", free: true, desc: "Low-barrier community asset center providing local clothing metrics and workspace loops.", phone: "(812) 372-3419", address: "1526 13th St, Columbus, IN 47201", website: "https://www.sanssouci.org", hours: "" },
   { name: "Servants at Work, Inc.", category: "Financial Assistance", scope: "Countywide", free: true, desc: "Constructs custom residential wheelchair ramps for disabled low-income individuals.", phone: "(317) 844-7297", address: "", website: "https://www.sawsramps.org", hours: "" },
@@ -333,7 +343,8 @@ const resources = [
   { name: "Utopia Wildlife Rehabilitators", category: "Crisis & Emergency", scope: "Countywide", free: true, desc: "Provides clinical veterinary care and tracking to orphaned or injured wild animals.", phone: "(812) 546-6318", address: "2430 E 850 N, Hope, IN 47246", website: "https://www.utopiawildlife.org", hours: "" },
   { name: "Veterans of Foreign Wars (VFW) Post 1987", category: "Family", scope: "Citywide", free: true, desc: "Fraternal post facilitating claim guidance lines and peer-to-peer social networks.", phone: "(812) 376-6469", address: "215 Forment St, Columbus, IN 47201", website: "", hours: "" },
   { name: "Volunteers of America, Ohio & Indiana", category: "Financial Assistance", scope: "Countywide", free: true, desc: "Provides large-scale addiction rehabilitation housing networks and veteran placements.", phone: "(855) 322-8432", address: "", website: "https://www.voaohin.org", hours: "" },
-  { name: "Yellow Trail Museum & Visitors Center", category: "Youth & Education", scope: "Countywide", free: true, desc: "Preserves the historical artifacts, heritage displays, and community history of Hope, IN.", phone: "(812) 546-8020", address: "644 Main St, Hope, IN 47246", website: "https://www.yellowtrailmuseum.com", hours: "" }
+  { name: "WorkOne Southeast - Columbus", category: "Financial Assistance", scope: "Countywide", free: true, desc: "Provides completely free workspace employment support services, custom job search tools, and career retraining consultation modules.", phone: "(812) 376-3351", address: "4555 Central Ave, Columbus, IN 47203", website: "https://www.workonesoutheast.org", hours: "" },
+  { name: "Yellow Trail Museum & Visitors Center", category: "Countywide", free: true, desc: "Preserves the historical artifacts, heritage displays, and community history of Hope, IN.", phone: "(812) 546-8020", address: "644 Main St, Hope, IN 47246", website: "https://www.yellowtrailmuseum.com", hours: "" }
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
